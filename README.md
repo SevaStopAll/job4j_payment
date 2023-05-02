@@ -1,0 +1,1 @@
+This is a part of delivery microservices app, responsable for the payments. 
