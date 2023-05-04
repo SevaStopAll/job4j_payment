@@ -11,4 +11,6 @@ public interface PaymentService {
     Optional<Payment> save(Payment payment);
 
     Collection<Payment> findAll();
+
+    boolean update(Payment payment);
 }

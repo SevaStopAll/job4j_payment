@@ -2,6 +2,7 @@ package ru.job4j.payment.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.job4j.payment.domain.Payment;
@@ -20,6 +21,8 @@ public class SimplePaymentService implements PaymentService {
     private final PaymentRepository payments;
     private final StatusRepository statuses;
     private final PayMethodRepository paymentMethods;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Override
     public Optional<Payment> findById(int id) {
@@ -43,12 +46,20 @@ public class SimplePaymentService implements PaymentService {
     public void receiveStatus(Map<String, Integer> data) {
 
     }
-
+    @Override
+    public boolean update(Payment payment) {
+        if (payments.findById(payment.getId()).isEmpty()) {
+            return false;
+        }
+        payments.save(payment);
+        changeStatus(payment);
+        return true;
+    }
     @Transactional
-    public void changeStatus(Order order) {
+    public void changeStatus(Payment payment) {
         Map<String, Integer> data = new HashMap();
-        data.put("id", order.getId());
-        data.put("status", order.getStatus().getId());
+        data.put("id", payment.getId());
+        data.put("status", payment.getStatus().getId());
         kafkaTemplate.send("cooked_order", data);
     }
 }
