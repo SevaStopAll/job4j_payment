@@ -22,7 +22,7 @@ public class Payment {
     private PayMethod method;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "status")
+    @JoinColumn(name = "status_id")
     @Setter
     @Getter
     private Status status;

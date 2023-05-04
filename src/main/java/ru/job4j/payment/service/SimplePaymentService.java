@@ -43,8 +43,11 @@ public class SimplePaymentService implements PaymentService {
     }
 
     @KafkaListener(topics = "payment_service")
-    public void receiveStatus(Map<String, Integer> data) {
-
+    public void receiveStatus(Map data) {
+        Payment payment = new Payment();
+        payment.setMethod(paymentMethods.findById((Integer) data.get("payment_method")).get());
+        payment.setStatus(statuses.findById(1).get());
+        payments.save(payment);
     }
     @Override
     public boolean update(Payment payment) {
@@ -60,6 +63,6 @@ public class SimplePaymentService implements PaymentService {
         Map<String, Integer> data = new HashMap();
         data.put("id", payment.getId());
         data.put("status", payment.getStatus().getId());
-        kafkaTemplate.send("cooked_order", data);
+        kafkaTemplate.send("paid_order", data);
     }
 }

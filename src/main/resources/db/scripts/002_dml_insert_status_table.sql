@@ -1,2 +1,3 @@
-insert into status (name) values('Оплачено');
-insert into status (name) values('Неоплачено');
+insert into status (name) values('Создан');
+insert into status (name) values('Оплачен');
+insert into status (name) values('Неоплачен');
