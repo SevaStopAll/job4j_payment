@@ -24,11 +24,12 @@ public class SimplePaymentService implements PaymentService {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Override
-    public Optional<Payment> findById(int id) {
-        return payments.findById(id);
-    }
-
+    /**
+     * Создать новую процедуру оплаты.
+     *
+     * @param payment оплата заказа.
+     * @return Optional оплаты
+     */
     @Override
     public Optional<Payment> save(Payment payment) {
         payment.setMethod(paymentMethods.findById(payment.getMethod().getId()).get());
@@ -37,11 +38,32 @@ public class SimplePaymentService implements PaymentService {
         return Optional.of(savedPayment);
     }
 
+    /**
+     * Получить все процедуры оплаты.
+     *
+     * @return лист процедур оплаты.
+     */
     @Override
     public Collection<Payment> findAll() {
         return payments.findAll();
     }
 
+    /**
+     * Найти оплату заказа по идентификатору.
+     *
+     * @param id идентификатор.
+     * @return Optional оплаты
+     */
+    @Override
+    public Optional<Payment> findById(int id) {
+        return payments.findById(id);
+    }
+
+    /**
+     * Получить от другого сервиса данные о проведении оплаты и сохранить новую процедуру оплаты.
+     *
+     * @param data данные по процедуре оплаты.
+     */
     @KafkaListener(topics = "payment_service")
     public void receiveStatus(Map data) {
         Payment payment = new Payment();
@@ -49,6 +71,13 @@ public class SimplePaymentService implements PaymentService {
         payment.setStatus(statuses.findById(1).get());
         payments.save(payment);
     }
+
+    /**
+     * Обновить статус оплаты заказа.
+     *
+     * @param payment оплата.
+     * @return результат обновления
+     */
     @Override
     public boolean update(Payment payment) {
         if (payments.findById(payment.getId()).isEmpty()) {
@@ -58,6 +87,12 @@ public class SimplePaymentService implements PaymentService {
         changeStatus(payment);
         return true;
     }
+
+    /**
+     * Изменить статус оплаты заказа и отправить эти данные в другой сервис.
+     *
+     * @param payment оплата.
+     */
     @Transactional
     public void changeStatus(Payment payment) {
         Map<String, Integer> data = new HashMap();
